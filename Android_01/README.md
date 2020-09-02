@@ -36,4 +36,5 @@ I then tested my application on the DragonBoard with a single LED and a resistor
 GND pin 1 on the 40 pin low power connector and saw the expected behavior of the LED turning on and off as I clicked the buttons
 on the Second_Fragment window.
 
-
+As part of my research into how to do this I submitted the following stackoverflow post which provides details as well
+https://stackoverflow.com/questions/63653864/accessing-gpio-low-power-connector-on-dragonboard-410c-running-android/
