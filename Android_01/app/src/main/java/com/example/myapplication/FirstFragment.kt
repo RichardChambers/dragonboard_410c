@@ -1,6 +1,8 @@
 package com.example.myapplication
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -10,9 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -67,7 +69,18 @@ class FirstFragment : Fragment() {
             if (mgr.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 txtScroll.append("GPS  Provider is enabled.\n")
 
-//                mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0.0F, gpslisten)
+                // requestLocationUpdates() may throu SecurityException so we need to
+                // use a try/catch. The value of a try expression is the result of
+                // the last expression.
+                // https://kotlinlang.org/docs/reference/exceptions.html
+                try {
+                    mgr.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0.0F, gpslisten)
+                    1     // indicate success with a value of 1
+                }
+                catch (e : SecurityException) {
+                    txtScroll.append("SecurityException from mgr.requestLocationUpdates() " + e.message + "\n")
+                    0     // indicate failure with a value of 0
+                }
             } else {
                 txtScroll.append("GPS  Provider is NOT enabled.\n")
             }
@@ -76,6 +89,7 @@ class FirstFragment : Fragment() {
             for (items in provider_list) {
                 txtScroll.append (items)
             }
+
         }
     }
 }
