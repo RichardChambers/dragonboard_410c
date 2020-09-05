@@ -45,7 +45,7 @@ class SecondFragment : Fragment() {
 
         view.findViewById<Button>(R.id.button_led_off).setOnClickListener {
             val gpioProcessor =  GpioProcessor()
-            // Get reference of GPIO27.
+            // Get reference of GPIO23.
             val gpioPin23 = gpioProcessor.pin23
 
             // Set GPIO23 as output.
@@ -56,13 +56,19 @@ class SecondFragment : Fragment() {
 
         view.findViewById<Button>(R.id.button_led_on).setOnClickListener {
             val gpioProcessor =  GpioProcessor()
-            // Get reference of GPIO27.
+            // Get reference of GPIO23.
             val gpioPin23 = gpioProcessor.pin23
 
             // Set GPIO23 as output.
             gpioPin23.pinOut()
             gpioPin23.pinHigh()    // drive pin high to turn on LED
             txtScroll.append("LED On\n")
+        }
+
+        view.findViewById<Button>(R.id.button_led_blink).setOnClickListener {
+            val myBlinkThread = led_thread()
+            myBlinkThread.start()
+            txtScroll.append("LED begin blink\n")
         }
 
     }
