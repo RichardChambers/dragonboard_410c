@@ -71,5 +71,10 @@ class SecondFragment : Fragment() {
             txtScroll.append("LED begin blink\n")
         }
 
+        view.findViewById<Button>(R.id.button_led_blink_multi).setOnClickListener {
+            val myBlinkThread = led_thread_multi()
+            myBlinkThread.start()
+            txtScroll.append("LED Multi begin blink\n")
+        }
     }
 }

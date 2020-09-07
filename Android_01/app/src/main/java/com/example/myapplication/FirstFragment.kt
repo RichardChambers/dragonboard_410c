@@ -88,8 +88,8 @@ class FirstFragment : Fragment() {
             txtScroll.append("List of Location Providers\n")
             for (items in provider_list) {
                 txtScroll.append (items)
+                txtScroll.append("\n")
             }
-
         }
     }
 }

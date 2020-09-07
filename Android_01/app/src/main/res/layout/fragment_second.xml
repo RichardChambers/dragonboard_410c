@@ -32,41 +32,51 @@
         android:id="@+id/button_led_on"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
+        android:layout_marginStart="32dp"
         android:layout_marginBottom="24dp"
         android:text="LED On"
         app:layout_constraintBottom_toTopOf="@+id/button_led_off"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textview_second"
-        app:layout_constraintVertical_bias="0.742" />
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/button_led_off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="36dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="160dp"
         android:text="LED Off"
         app:layout_constraintBottom_toTopOf="@+id/scrollLedStatus"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/button_led_blink"
+        android:id="@+id/button_led_blink_multi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="88dp"
-        android:layout_marginTop="52dp"
-        android:text="LED Blink"
+        android:layout_marginTop="40dp"
+        android:text="LED Blink Multi"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.17"
+        app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toEndOf="@+id/button_led_on"
         app:layout_constraintTop_toBottomOf="@+id/textview_second" />
+
+    <Button
+        android:id="@+id/button_led_blink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="60dp"
+        android:text="LED Blink"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_led_off" />
 
     <ScrollView
         android:id="@+id/scrollLedStatus"
         android:layout_width="341dp"
         android:layout_height="124dp"
-        android:layout_marginTop="262dp"
+        android:layout_marginTop="296dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textview_second">
@@ -78,5 +88,35 @@
             android:padding="3dip"
             android:text=" LED Status\n" />
     </ScrollView>
+
+    <CheckBox
+        android:id="@+id/checkBox_Pin23"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="80dp"
+        android:text="GPIO Pin 23"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_led_blink_multi" />
+
+    <CheckBox
+        android:id="@+id/checkBox_Pin25"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="80dp"
+        android:text="GPIO Pin 25"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_Pin23" />
+
+    <CheckBox
+        android:id="@+id/checkBox_Pin27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="80dp"
+        android:text="GPIO Pin 27"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_Pin25" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
