@@ -3,15 +3,15 @@ Experiments with a DragonBoard 410C from Arrow Electronics with the Qualcomm Sna
 
 **Resources**
 
-There is an introductory online course in Coursera, [Internet of Things: Setting Up Your DragonBoard Development Platform](www.coursera.org/learn/internet-of-things-dragonboard/) which I am finding to be helpful.
+There is an introductory online course in Coursera, [Internet of Things: Setting Up Your DragonBoard Development Platform](https://www.coursera.org/learn/internet-of-things-dragonboard/) which I am finding to be helpful.
 
-Arrow Electronics has documentation and links to resources available on the [DragonBoard product description and purchase web page](www.arrow.com/en/products/dragonboard410c/arrow-development-tools).
+Arrow Electronics has documentation and links to resources available on the [DragonBoard product description and purchase web page](https://www.arrow.com/en/products/dragonboard410c/arrow-development-tools).
 
-96Boards has reference information as well as several operating system alternatives (Android and Linux) available on the [96Boards DragonBoard 410C product description page](www.96boards.org/product/dragonboard410c/).
+96Boards has reference information as well as several operating system alternatives (Android and Linux) available on the [96Boards DragonBoard 410C product description page](https://www.96boards.org/product/dragonboard410c/).
 
-Qualcomm has information and resources through the [DragonBoard 410C Development Board section of their developer portal](developer.qualcomm.com/hardware/dragonboard-410c).
+Qualcomm has information and resources through the [DragonBoard 410C Development Board section of their developer portal](https://developer.qualcomm.com/hardware/dragonboard-410c).
 
-Google Android Studio is avalable through their developer portal which also has a [link to resources for learning Kotlin](developer.android.com/kotlin).
+Google Android Studio is avalable through their developer portal which also has a [link to resources for learning Kotlin](https://developer.android.com/kotlin).
 
 An article that provides an explanation of the Linux pseudo file system of which sysfs and the /sys/class/gpio legacy implementation of the GPIO device interface are a part. [Applying C - The Pseudo File System](https://www.i-programmer.info/programming/cc/12949-applying-c-the-pseudo-file-system.html).
 
@@ -22,7 +22,7 @@ The DragonBoard 410C is a small credit card sized computer similar in size and f
 
 The device has 1GB of RAM and a 8 GB eMMC persistent storage and a microSD 3.0 slot as well. Out of the box, the DragonBoard 410C had a generic Android 5.1 installed into the eMMC. Other operating systems can be installed and I plan to go with Windows 10 IoT Core later.
 
-The Android 5.1 build does not have the Google ecosystem which means no Google applications such as the Play Store. However there are a [number of alternative Android app stores](theappsolutions.com/blog/marketing/alternative-android-app-stores/). For application development and testing, I will be sideloading apps anyway.
+The Android 5.1 build does not have the Google ecosystem which means no Google applications such as the Play Store. However there are a [number of alternative Android app stores](https://theappsolutions.com/blog/marketing/alternative-android-app-stores/). For application development and testing, I will be sideloading apps anyway.
 
 My initial DragonBoard setup was using an HDMI monitor along with a USB keyboard and USB mouse to see what the device looked like. The user interface is similar to an Android phone with the mouse rather than a finger being used to select with a click and to swipe doing a click/drag. I used the Settings app to connect the device to my cable router allowing access to the internet. The FireFox browser was already installed allowing me to read the Washington Post. There was a bit of delay at times when the browser displayed new content.
 
