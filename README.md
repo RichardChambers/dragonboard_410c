@@ -13,6 +13,9 @@ Qualcomm has information and resources through the [DragonBoard 410C Developmen
 
 Google Android Studio is avalable through their developer portal which also has a [link to resources for learning Kotlin](developer.android.com/kotlin).
 
+An article that provides an explanation of the Linux pseudo file system of which sysfs and the /sys/class/gpio legacy implementation of the GPIO device interface are a part. [Applying C - The Pseudo File System](https://www.i-programmer.info/programming/cc/12949-applying-c-the-pseudo-file-system.html).
+
+.
 **Background and initial unboxing**
 
 The DragonBoard 410C is a small credit card sized computer similar in size and form to the Raspberry Pi 3. It has WiFi and Bluetooth built in and a low speed 40 pin connector similar to that of the Raspberry Pi 3 (the pin voltage is 1.8v). It has a micro-USB connector for connection to a host computer and a barrel power supply connector in addition to the full size HDMI connector and two USB 2.0 connectors for peripherals such as keyboard and mouse (the Pi 3 has four USB connectors). There is a GPS receiver built into the board.
