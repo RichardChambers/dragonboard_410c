@@ -11,6 +11,7 @@ import java.util.*
  *   Java source from the article was converted to Kotlin using Android Studio.
  *
  * See as well https://github.com/IOT-410c/DragonBoard410c_GpioLibrary
+ * See as well https://www.coursera.org/learn/internet-of-things-sensing-actuation/lecture/cKLMW/modify-boot-script
  *
  * Simple example main()
  *
@@ -73,7 +74,7 @@ class GpioProcessor {
     private val  androidPin25 = 915
     private val  androidPin26 = 971
     private val  androidPin27 = 1017
-    private val  androidPin28 = 0      // Reserved
+    private val  androidPin28 = 901   // GPIO pin borrowed from MPP. supports PWM. support analog I/O.
     private val  androidPin29 = 926   // (input only)
     private val  androidPin30 = 927
     private val  androidPin31 = 937
@@ -86,7 +87,7 @@ class GpioProcessor {
     private val  linuxPin25 = 13
     private val  linuxPin26 = 69
     private val  linuxPin27 = 115
-    private val  linuxPin28 = 0     // Reserved
+    private val  linuxPin28 = 4     // GPIO pin borrowed from MPP. supports PWM. support analog I/O.
     private val  linuxPin29 = 24    // (input only)
     private val  linuxPin30 = 25
     private val  linuxPin31 = 35
@@ -99,7 +100,7 @@ class GpioProcessor {
     private val  physicalPin25 = androidPin25
     private val  physicalPin26 = androidPin26
     private val  physicalPin27 = androidPin27
-    private val  physicalPin28 = androidPin28      // Reserved
+    private val  physicalPin28 = androidPin28    // GPIO pin borrowed from MPP. supports PWM. support analog I/O.
     private val  physicalPin29 = androidPin29    // (input only)
     private val  physicalPin30 = androidPin30
     private val  physicalPin31 = androidPin31
