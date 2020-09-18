@@ -89,7 +89,7 @@ class GpioProcessor {
     //  I2C1 SDA    21   |  Reserved     22
     //  GPIO        23   |  GPIO         24
     //  GPIO        25   |  GPIO         26
-    //  GPIO        27   |  Reserved*    28     * Reserved pin 28
+    //  GPIO        27   |  Reserved*    28     * Reserved pin 28 to MPP-4
     //  GPIO *      29   |  GPIO         30     * pin 29 is Input only
     //  GPIO        31   |  GPIO         32
     //  GPIO        33   |  GPIO         34
@@ -108,9 +108,9 @@ class GpioProcessor {
     private val  androidPin25 = 915
     private val  androidPin26 = 971
     private val  androidPin27 = 1017
-    private val  androidPin28 = 901   // GPIO pin borrowed from MPP. supports PWM. support analog I/O.
+    private val  androidPin28 = 901   // GPIO pin borrowed from MPP-4. supports PWM. support analog I/O.
     private val  androidPin29 = 926   // (input only)
-    private val  androidPin30 = 927
+    private val  androidPin30 = 927   // Android reserves pin 30 for DSI display.
     private val  androidPin31 = 937
     private val  androidPin32 = 936
     private val  androidPin33 = 930
