@@ -44,8 +44,8 @@
         android:id="@+id/button_led_off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginBottom="160dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="168dp"
         android:text="LED Off"
         app:layout_constraintBottom_toTopOf="@+id/scrollLedStatus"
         app:layout_constraintStart_toStartOf="parent" />
@@ -66,8 +66,8 @@
         android:id="@+id/button_led_blink"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="36dp"
         android:text="LED Blink"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_led_off" />
@@ -118,5 +118,29 @@
         android:text="GPIO Pin 27"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/checkBox_Pin25" />
+
+    <Button
+        android:id="@+id/button_led_user1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="LED User 1"
+        app:layout_constraintBottom_toTopOf="@+id/scrollLedStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_led_blink" />
+
+    <Button
+        android:id="@+id/button_led_user2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="LED User 2"
+        app:layout_constraintBottom_toTopOf="@+id/scrollLedStatus"
+        app:layout_constraintEnd_toStartOf="@+id/checkBox_Pin27"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/button_led_user1"
+        app:layout_constraintTop_toBottomOf="@+id/button_led_blink"
+        app:layout_constraintVertical_bias="0.9" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

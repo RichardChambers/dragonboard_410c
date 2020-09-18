@@ -57,7 +57,9 @@ import java.util.*
  * gpioProcessor.closePins();
  * }
  * }
- */ /*
+ */
+
+/*
  This class abstracts the use of the gpio pins. This class can be utilized on any linux operating
  system that has gpio pins defined in the /sys/class/gpio directory. It is required that the gpio
  pins themselves are available for access by the user of this application, and may require a
@@ -67,8 +69,40 @@ class GpioProcessor {
     private val PATH = "/sys/class/gpio"
     private val pins: MutableList<Int> = ArrayList()
 
-    // mapping of physical pin number to GPIO file number.
-    // the mapping varies depending on the operating system
+    // mapping of physical pin number of 40 pin low power connector
+    // to pin functionality.
+    //
+    // orient board looking down with 40 pin low power connector on right and the
+    // USB connectors to the left. The pins in the Pin Right column are nearest
+    // to the right hand side of the board.
+    //     Pin Left      |     Pin Right
+    //  GND          1   |  GND           2
+    //  UART0 CTS    3   |  Reserved      4
+    //  UART0 TX     5   |  Reserved      6
+    //  UART0 RX     7   |  SPI0 CLK      8
+    //  UART0 RTS    9   |  SPI0 MISO    10
+    //  UART1 TX    11   |  SPI0 CS N    12
+    //  UART1 RX    13   |  SPI0 MOSI    14
+    //  I2C0 SCL    15   |  Reserved     16
+    //  I2C0 SDA    17   |  Reserved     18
+    //  I2C1 SCL    19   |  Reserved     20
+    //  I2C1 SDA    21   |  Reserved     22
+    //  GPIO        23   |  GPIO         24
+    //  GPIO        25   |  GPIO         26
+    //  GPIO        27   |  Reserved*    28     * Reserved pin 28
+    //  GPIO *      29   |  GPIO         30     * pin 29 is Input only
+    //  GPIO        31   |  GPIO         32
+    //  GPIO        33   |  GPIO         34
+    //  1.8V PWR    35   |  SYS DC IN    36
+    //  5V PWR      37   |  SYS DC IN    38
+    //  GND         39   |  GND          40
+    //
+    //  GPIO 21 (User LED 1) and GPIO 120 (User LED 2) control onboard LEDs.
+    //  PM_GPIO_1 (User LED 3) and PM_GPIO_2 (User LED 4) control onboard LEDs.
+
+
+    //----------------------------------------------------------
+    // mapping of physical pin number to GPIO number for Android
     private val  androidPin23 = 938
     private val  androidPin24 = 914
     private val  androidPin25 = 915
@@ -82,6 +116,8 @@ class GpioProcessor {
     private val  androidPin33 = 930
     private val  androidPin34 = 935
 
+    //----------------------------------------------------------
+    // mapping of physical pin number to GPIO number for Linux
     private val  linuxPin23 = 36
     private val  linuxPin24 = 12
     private val  linuxPin25 = 13
@@ -95,6 +131,8 @@ class GpioProcessor {
     private val  linuxPin33 = 28
     private val  linuxPin34 = 33
 
+    //----------------------------------------------------------
+    // mapping of physical pin number to specified operating system GPIO number
     private val  physicalPin23 = androidPin23
     private val  physicalPin24 = androidPin24
     private val  physicalPin25 = androidPin25
@@ -202,6 +240,7 @@ class GpioProcessor {
     val pin34: Gpio
         get() = getPin(physicalPin34)
 
+
     /**
      * Get all GPIO's pins.
      * @return List of pins.
@@ -229,7 +268,7 @@ class GpioProcessor {
      * @param pin GPIO pin to access.
      */
     private fun exportPin(pin: Int) {
-        println("Exporting Ping")
+        println("Exporting Pin Int")
         try {
             val out = BufferedWriter(FileWriter("$PATH/export", false))
             out.write(pin.toString())
@@ -264,4 +303,96 @@ class GpioProcessor {
     companion object {
         const val TAG = "GpioProcessor"
     }
+}
+
+class GpioProcessorLed {
+
+    // Built in LEDs on board.  Turning them off using following python code.
+    // This is for Android.
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:blue:bt/trigger")
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:green:user1/trigger")
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:green:user2/trigger")
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:green:user3/trigger")
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:green:user4/trigger")
+    // os.system("sudo echo none | sudo tee /sys/class/leds/apq8016-sbc:yellow:wlan/trigger")
+
+    // From https://www.96boards.org/documentation/consumer/dragonboard/dragonboard410c/guides/led-connectors.md.html
+    //    Linux built in board LED assignments
+    // +----------------------+----------------------+--------------------------+
+    // | LED Board Identifier | Description          | Behavior                 |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 1           | Heartbeat            | Green: This LED is       |
+    // |                      |                      | should always be         |
+    // |                      |                      | blinking about once a    |
+    // |                      |                      | second. If solid off or  |
+    // |                      |                      | solid on, the board is   |
+    // |                      |                      | not executing correctly  |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 2           | eMMC                 | Green: This LED blinks   |
+    // |                      |                      | during accesses to eMMC  |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 3           | SD                   | Green: This LED blinks   |
+    // |                      |                      | during accesses to SD    |
+    // |                      |                      | Card                     |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 4           | currently unassigned | N/A                      |
+    // +----------------------+----------------------+--------------------------+
+    // | Wifi                 | Wifi                 | Yellow: This LED blinks  |
+    // |                      |                      | during network accesses  |
+    // |                      |                      | over Wifi                |
+    // +----------------------+----------------------+--------------------------+
+    // | BT                   | Bluetooth            | Yellow: This LED blinks  |
+    // |                      |                      | when Bluetooth is being  |
+    // |                      |                      | used                     |
+    // +----------------------+----------------------+--------------------------+
+    //
+    //  Android built in board LED assignments
+    // +----------------------+----------------------+--------------------------+
+    // | LED Board Identifier | Description          | Behavior                 |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 1           | currently unassigned | Green:                   |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 2           | currently unassigned | Green:                   |
+    // |                      |                      |                          |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 3           | currently unassigned | Green:                   |
+    // |                      |                      |                          |
+    // |                      |                      |                          |
+    // +----------------------+----------------------+--------------------------+
+    // | User LED 4           | Boot                 | This LED illuminates at  |
+    // |                      |                      | at the start of boot     |
+    // |                      |                      | and turns of after       |
+    // |                      |                      | completion of boot.      |
+    // +----------------------+----------------------+--------------------------+
+    // | Wifi                 | Wifi                 | Yellow: TDB              |
+    // +----------------------+----------------------+--------------------------+
+    // | BT                   | Bluetooth            | Yellow: TBD              |
+    // +----------------------+----------------------+--------------------------+
+
+    private val  androidUserLed1 = "/sys/class/leds/led1"
+    private val  androidUserLed2 = "/sys/class/leds/led2"
+    private val  androidUserLed3 = "/sys/class/leds/led3"
+    private val  androidUserLed4 = ""     // not available. used by Android for boot indicator
+
+    private val  linuxUserLed1 = ""   // not available. used by Linux for heartbeat indicator
+    private val  linuxUserLed2 = ""   // not available. used by Linux for eMMC indicator
+    private val  linuxUserLed3 = ""   // not available. used by Linux for SD card indicator
+    private val  linuxUserLed4 = "/sys/class/leds/apq8016-sbc:green:user4/brightness"   // not available. used by Android for boot indicator
+
+    private val  userLED1 = androidUserLed1    // on board LED between the USB connectors
+    private val  userLED2 = androidUserLed2    // on board LED between the USB connectors
+    private val  userLED3 = androidUserLed3    // on board LED between the USB connectors
+    private val  userLED4 = androidUserLed4    // on board LED between the USB connectors
+
+    val pinLed1: GpioLed
+        get() = GpioLed(userLED1)
+
+    val pinLed2: GpioLed
+        get() = GpioLed(userLED2)
+
+    val pinLed3: GpioLed
+        get() = GpioLed(userLED3)
+
+    val pinLed4: GpioLed
+        get() = GpioLed(userLED4)
 }

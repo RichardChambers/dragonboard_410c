@@ -3,11 +3,16 @@ package com.example.myapplication
 import java.io.*
 
 /**
- * Created by Ara on 7/21/15.
+ * Originall Created by Ara on 7/21/15.
  * From https://www.instructables.com/id/DragonBoard-How-to-Access-GPIOs-Using-Java/
  *   Java source from the article was converted to Kotlin using Android Studio.
  *
- * See as well https://github.com/IOT-410c/DragonBoard410c_GpioLibrary
+ * The source has since been heavily modified by Richard Chambers, 9/17/2020
+ *   - added GpioLed class
+ *   - added GpioPwm class
+ *
+ * See as well https://github.com/IOT-410c/DragonBoard410c_GpioLibrary for a similar
+ * library.
  *
  * See also for GPIO:
  *   https://stackoverflow.com/questions/63769403/what-is-the-sys-class-gpio-export-and-sys-class-gpio-unexport-mechanism-and-w
@@ -29,8 +34,57 @@ import java.io.*
  *   https://docs.google.com/a/beagleboard.org/document/d/17P54kZkZO_-JtTjrFuVz-Cp_RMMg7GB_8W9JK9sLKfA/pub
  *   https://community.intel.com/t5/Intel-Makers/Programming-GPIO-Ports-From-Linux/td-p/502963?profile.language=en
  */
-class Gpio(pin: Int) {
-    private val pin: Int
+
+class GpioFile {
+
+    /*
+     * WARNING: The file access permissions for the corresponding user LED sysfs
+     *          pseudo file must allow for the pseudo file to be opened and updated
+     *          in order for the set() function to work.
+     */
+    public fun setPseudoFile (pinPathFull : String, pinValue : String) {
+        println("    setPseudoFile - String")
+        try {
+            val out = BufferedWriter(FileWriter(pinPathFull, false))
+            out.write(pinValue)
+            out.close()
+        } catch (e: IOException) {
+            println("Error: " + e.message)
+        }
+    }
+
+    /*
+     * WARNING: The file access permissions for the corresponding user LED sysfs
+     *          pseudo file must allow for the pseudo file to be opened and updated
+     *          in order for the set() function to work.
+     */
+    public fun setPseudoFile(pinPathFull : String, pinValue : Int) {
+            println("   setPseudoFile - Int")
+            setPseudoFile(pinPathFull, Integer.toString(pinValue))
+        }
+
+    public fun getPseudoFile(pinPathFull : String)  : String {
+        println("    getPseudoFile - String")
+        var line = ""
+        try {
+            val br = BufferedReader(FileReader(pinPathFull))
+            line = br.readLine()
+            br.close()
+        } catch (e: Exception) {
+            println("Error: " + e.message)
+        }
+        return line
+    }
+
+    public fun getPseudoFileInt(pinPathFull : String)  : Int {
+        println("    getPseudoFile - Int")
+        return getPseudoFile(pinPathFull).toInt()
+    }
+}
+
+class Gpio(pin: Int)  {
+    private val pin : Int
+    private val pinGpio : GpioFile = GpioFile()
 
     /*
      *  The GPIO pins are represented by folders in the Linux file system
@@ -65,26 +119,13 @@ class Gpio(pin: Int) {
     var direction: String
         get() {
             println("Getting Direction")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/direction")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line
+            return pinGpio.getPseudoFile(MakeFileName(pin,  "/direction"))
         }
         private set(direction) {
             println("Setting Direction")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/direction"), false))
-                out.write(direction)
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile(MakeFileName(pin,  "/direction"), direction)
         }
+
     /**
      * Set pin as output.
      */
@@ -123,26 +164,13 @@ class Gpio(pin: Int) {
     var value: Int
         get() {
             println("Getting Value")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/value")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line.toInt()
+            return pinGpio.getPseudoFileInt(MakeFileName(pin,  "/value"))
         }
         private set(value) {
             println("Setting Value")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/value"), false))
-                out.write(Integer.toString(value))
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin,  "/value"), value)
         }
+
 
     /**
      * Set pin as high.
@@ -172,40 +200,26 @@ class Gpio(pin: Int) {
     var edge: String
         get() {
             println("Getting edge")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/edge")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line
+            return pinGpio.getPseudoFile(MakeFileName(pin,  "/edge"))
         }
         private set(edge) {
             println("Setting edge")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/edge"), false))
-                out.write(edge)
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin,  "/edge"), edge)
         }
 
-    fun pinNone() {
+    fun pinEdgeNone() {
         edge = "none"
     }
 
-    fun pinRising() {
+    fun pinEdgeRising() {
         edge = "rising"
     }
 
-    fun pinFalling() {
+    fun pinEdgeFalling() {
         edge = "falling"
     }
 
-    fun pinBoth() {
+    fun pinEdgeBoth() {
         edge = "both"
     }
 
@@ -226,26 +240,13 @@ class Gpio(pin: Int) {
     var active_low: Int
         get() {
             println("Getting active_low")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/active_low")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line.toInt()
+            return pinGpio.getPseudoFileInt(MakeFileName(pin, "/active_low"))
         }
         private set(active_low) {
             println("Setting active_low")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/active_low"), false))
-                out.write(Integer.toString(active_low))
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin, "/active_low"), active_low)
         }
+
 
     fun pinActiveLow() {
         active_low = 1
@@ -297,8 +298,41 @@ class Gpio(pin: Int) {
     }
 }
 
+class GpioLed(pin : String) {
+    public val pin : String = pin
+
+    private val gpioLed : GpioFile = GpioFile()
+
+    /**
+     * Get the current pin brightness setting or
+     * Set the pin brightness. 0 is unlit and 1 is lit.
+     */
+    var brightness: Int
+        get() {
+            println("Getting Brightness")
+            return gpioLed.getPseudoFileInt(pin + "/brightness")
+        }
+        private set(brightness) {
+            println("Setting Brightness")
+            gpioLed.setPseudoFile (pin + "/brightness", brightness)
+        }
+
+    fun pinHigh() {
+        brightness = 1
+    }
+
+    /**
+     * Set pin as low.
+     */
+    fun pinLow() {
+        brightness = 0
+    }
+
+}
+
 class GpioPwm(pin: Int) {
     private val pin: Int
+    private val pinGpio : GpioFile = GpioFile()
 
     /*   See https://www.kernel.org/doc/html/latest/driver-api/pwm.html
      *
@@ -336,28 +370,14 @@ class GpioPwm(pin: Int) {
      * Get or set the current direction of a pin.
      * A pin may be either an Input pin or an Output pin.
      */
-    var period: String
+    var period: Int
         get() {
             println("Getting period")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/period")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line
+            return pinGpio.getPseudoFileInt(MakeFileName(pin,  "/period"))
         }
-        private set(direction) {
+        private set(period) {
             println("Setting period")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/period"), false))
-                out.write(direction)
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin, "/period"), period)
         }
 
     /**
@@ -369,25 +389,11 @@ class GpioPwm(pin: Int) {
     var duty_cycle: Int
         get() {
             println("Getting duty_cycle")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/duty_cycle")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line.toInt()
+            return pinGpio.getPseudoFileInt(MakeFileName(pin, "/duty_cycle"))
         }
-        private set(value) {
+        private set(duty_cycle) {
             println("Setting duty_cycle")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/duty_cycle"), false))
-                out.write(Integer.toString(value))
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin, "/duty_cycle"), duty_cycle)
         }
 
     /**
@@ -400,25 +406,11 @@ class GpioPwm(pin: Int) {
     var polarity: String
         get() {
             println("Getting polarity")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/polarity")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line
+            return pinGpio.getPseudoFile(MakeFileName(pin,  "/polarity"))
         }
         private set(polarity) {
             println("Setting polarity")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/polarity"), false))
-                out.write(polarity)
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin, "/polarity"), polarity)
         }
 
     /**
@@ -430,25 +422,11 @@ class GpioPwm(pin: Int) {
     var enable: Int
         get() {
             println("Getting enable")
-            var line = ""
-            try {
-                val br = BufferedReader(FileReader(MakeFileName(pin, "/enable")))
-                line = br.readLine()
-                br.close()
-            } catch (e: Exception) {
-                println("Error: " + e.message)
-            }
-            return line.toInt()
+            return pinGpio.getPseudoFileInt(MakeFileName(pin, "/enable"))
         }
         private set(enable) {
             println("Setting enable")
-            try {
-                val out = BufferedWriter(FileWriter(MakeFileName(pin, "/enable"), false))
-                out.write(Integer.toString(enable))
-                out.close()
-            } catch (e: IOException) {
-                println("Error: " + e.message)
-            }
+            pinGpio.setPseudoFile (MakeFileName(pin, "/enable"), enable)
         }
 
     /**
@@ -466,9 +444,9 @@ class GpioPwm(pin: Int) {
     }
 
     /**
-     * Set pin as output.
+     * Set pin polarity.
      */
-    fun pinNormal() {
+    fun pinPolarityNormal() {
         polarity = "normal"
     }
 
@@ -476,7 +454,7 @@ class GpioPwm(pin: Int) {
      * Set pin as input.
      * @param pin - Desirable pin.
      */
-    fun pinInverted() {
+    fun pinPolarityInverted() {
         polarity = "inversed"
     }
 

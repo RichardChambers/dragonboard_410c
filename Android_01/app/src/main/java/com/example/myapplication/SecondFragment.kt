@@ -16,6 +16,9 @@ import androidx.navigation.fragment.findNavController
  */
 class SecondFragment : Fragment() {
 
+    private var pinUser1State = 0
+    private var pinUser2State = 0
+
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
@@ -76,5 +79,40 @@ class SecondFragment : Fragment() {
             myBlinkThread.start()
             txtScroll.append("LED Multi begin blink\n")
         }
+
+        view.findViewById<Button>(R.id.button_led_user1).setOnClickListener {
+            val gpioProcessorLed =  GpioProcessorLed()
+            val gpiopinLed = gpioProcessorLed.pinLed1
+
+            if (pinUser1State == 0) {
+                val myValue : Int = gpiopinLed.brightness;
+                gpiopinLed.pinHigh()    // drive pin high to turn on LED
+                txtScroll.append("LED Uer 1 On " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
+                pinUser1State = 1
+            } else {
+                val myValue : Int = gpiopinLed.brightness;
+                gpiopinLed.pinLow()    // drive pin low to turn off LED
+                txtScroll.append("LED Uer 1 Off " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
+                pinUser1State = 0
+            }
+        }
+
+        view.findViewById<Button>(R.id.button_led_user2).setOnClickListener {
+            val gpioProcessorLed =  GpioProcessorLed()
+            val gpiopinLed = gpioProcessorLed.pinLed2
+
+            if (pinUser2State == 0) {
+                val myValue : Int = gpiopinLed.brightness;
+                gpiopinLed.pinHigh()    // drive pin high to turn on LED
+                txtScroll.append("LED User 2 On " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
+                pinUser2State = 1
+            } else {
+                val myValue : Int = gpiopinLed.brightness;
+                gpiopinLed.pinLow()    // drive pin low to turn off LED
+                txtScroll.append("LED User 2 Off " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
+                pinUser2State = 0
+            }
+        }
+
     }
 }
