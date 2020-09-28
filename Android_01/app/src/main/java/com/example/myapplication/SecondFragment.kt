@@ -68,6 +68,26 @@ class SecondFragment : Fragment() {
             txtScroll.append("LED On\n")
         }
 
+        view.findViewById<Button>(R.id.button_edge_poll).setOnClickListener {
+            val gpioProcessor =  GpioProcessor()
+            // Get reference of GPIO23.
+            val gpioPin23 = gpioProcessor.pin23
+
+            // Set GPIO23 as output.
+            gpioPin23.pinIn()
+            txtScroll.append("Edge Poll pin set up. Polling now.\n")
+
+            var xvalue : Int = gpioPin23.pinPoll(5000)
+
+            if (xvalue == 0) {
+                xvalue = gpioPin23.value
+                txtScroll.append("    Edge Poll pin value " + Integer.toString(xvalue) + "\n")
+            } else {
+                txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xvalue) + "\n")
+            }
+        }
+
+
         view.findViewById<Button>(R.id.button_led_blink).setOnClickListener {
             val myBlinkThread = led_thread()
             myBlinkThread.start()
@@ -85,12 +105,12 @@ class SecondFragment : Fragment() {
             val gpiopinLed = gpioProcessorLed.pinLed1
 
             if (pinUser1State == 0) {
-                val myValue : Int = gpiopinLed.brightness;
+                val myValue : Int = gpiopinLed.brightness
                 gpiopinLed.pinHigh()    // drive pin high to turn on LED
                 txtScroll.append("LED Uer 1 On " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
                 pinUser1State = 1
             } else {
-                val myValue : Int = gpiopinLed.brightness;
+                val myValue : Int = gpiopinLed.brightness
                 gpiopinLed.pinLow()    // drive pin low to turn off LED
                 txtScroll.append("LED Uer 1 Off " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
                 pinUser1State = 0
@@ -102,12 +122,12 @@ class SecondFragment : Fragment() {
             val gpiopinLed = gpioProcessorLed.pinLed2
 
             if (pinUser2State == 0) {
-                val myValue : Int = gpiopinLed.brightness;
+                val myValue : Int = gpiopinLed.brightness
                 gpiopinLed.pinHigh()    // drive pin high to turn on LED
                 txtScroll.append("LED User 2 On " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
                 pinUser2State = 1
             } else {
-                val myValue : Int = gpiopinLed.brightness;
+                val myValue : Int = gpiopinLed.brightness
                 gpiopinLed.pinLow()    // drive pin low to turn off LED
                 txtScroll.append("LED User 2 Off " + gpiopinLed.pin + " was " + myValue.toString() + "\n")
                 pinUser2State = 0

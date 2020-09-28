@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -61,4 +62,12 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    // See the StackOverFlow question with answer at URL:
+    //    https://stackoverflow.com/questions/36932662/android-how-to-call-ndk-function-from-kotlin
+    init {
+        System.loadLibrary("pollfileservice")
+    }
+
+    external fun pollFileWithTimeOut(pathPseudo : String, timeOutMs : Int): Int
 }

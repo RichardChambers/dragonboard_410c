@@ -42,7 +42,7 @@ class GpioFile {
      *          pseudo file must allow for the pseudo file to be opened and updated
      *          in order for the set() function to work.
      */
-    public fun setPseudoFile (pinPathFull : String, pinValue : String) {
+    fun setPseudoFile (pinPathFull : String, pinValue : String) {
         println("    setPseudoFile - String")
         try {
             val out = BufferedWriter(FileWriter(pinPathFull, false))
@@ -58,12 +58,12 @@ class GpioFile {
      *          pseudo file must allow for the pseudo file to be opened and updated
      *          in order for the set() function to work.
      */
-    public fun setPseudoFile(pinPathFull : String, pinValue : Int) {
+    fun setPseudoFile(pinPathFull : String, pinValue : Int) {
             println("   setPseudoFile - Int")
             setPseudoFile(pinPathFull, Integer.toString(pinValue))
         }
 
-    public fun getPseudoFile(pinPathFull : String)  : String {
+    fun getPseudoFile(pinPathFull : String)  : String {
         println("    getPseudoFile - String")
         var line = ""
         try {
@@ -76,10 +76,19 @@ class GpioFile {
         return line
     }
 
-    public fun getPseudoFileInt(pinPathFull : String)  : Int {
+    fun getPseudoFileInt(pinPathFull : String)  : Int {
         println("    getPseudoFile - Int")
         return getPseudoFile(pinPathFull).toInt()
     }
+
+    fun pollPseudoFile (pinPathFull : String, timeOutMs : Int) : Int {
+        println("    pollPseudoFile - String")
+
+        val iStatus : Int = MainActivity().pollFileWithTimeOut (pinPathFull, timeOutMs)
+
+        return iStatus
+    }
+
 }
 
 class Gpio(pin: Int)  {
@@ -186,6 +195,21 @@ class Gpio(pin: Int)  {
         value = LOW
     }
 
+// Check the specified file using the poll(2) service and
+// return a status as follows:
+//  -    0  -> poll(2) success indicating something is available
+//  -    1  -> poll(2) failed with time out before anything available
+//  -   -1  -> poll(2) error - EFAULT
+//  -   -2  -> poll(2) error - EINTR
+//  -   -3  -> poll(2) error - EINVAL
+//  -   -4  -> poll(2) error - ENOMEM
+//  - -100 -> poll(2) error - Unknown error
+//
+    fun pinPoll (timeMs: Int) : Int {
+        val iStatus : Int = pinGpio.pollPseudoFile (MakeFileName(pin,  "/value"), timeMs)
+        return iStatus
+    }
+
     /**
      * Get or Set pin edge.
      * @param value Value of pin.
@@ -223,6 +247,9 @@ class Gpio(pin: Int)  {
         edge = "both"
     }
 
+    fun waitOnPin () {
+
+    }
 
     /**
      * Get or Set pin active_low.
@@ -299,7 +326,7 @@ class Gpio(pin: Int)  {
 }
 
 class GpioLed(pin : String) {
-    public val pin : String = pin
+    val pin : String = pin
 
     private val gpioLed : GpioFile = GpioFile()
 
@@ -331,8 +358,9 @@ class GpioLed(pin : String) {
 }
 
 class GpioPwm(pin: Int) {
-    private val pin: Int
-    private val pinGpio : GpioFile = GpioFile()
+    val pin : Int = pin
+
+    private val gpioPwm : GpioFile = GpioFile()
 
     /*   See https://www.kernel.org/doc/html/latest/driver-api/pwm.html
      *
@@ -373,11 +401,11 @@ class GpioPwm(pin: Int) {
     var period: Int
         get() {
             println("Getting period")
-            return pinGpio.getPseudoFileInt(MakeFileName(pin,  "/period"))
+            return gpioPwm.getPseudoFileInt(MakeFileName(pin,  "/period"))
         }
         private set(period) {
             println("Setting period")
-            pinGpio.setPseudoFile (MakeFileName(pin, "/period"), period)
+            gpioPwm.setPseudoFile (MakeFileName(pin, "/period"), period)
         }
 
     /**
@@ -389,11 +417,11 @@ class GpioPwm(pin: Int) {
     var duty_cycle: Int
         get() {
             println("Getting duty_cycle")
-            return pinGpio.getPseudoFileInt(MakeFileName(pin, "/duty_cycle"))
+            return gpioPwm.getPseudoFileInt(MakeFileName(pin, "/duty_cycle"))
         }
         private set(duty_cycle) {
             println("Setting duty_cycle")
-            pinGpio.setPseudoFile (MakeFileName(pin, "/duty_cycle"), duty_cycle)
+            gpioPwm.setPseudoFile (MakeFileName(pin, "/duty_cycle"), duty_cycle)
         }
 
     /**
@@ -406,11 +434,11 @@ class GpioPwm(pin: Int) {
     var polarity: String
         get() {
             println("Getting polarity")
-            return pinGpio.getPseudoFile(MakeFileName(pin,  "/polarity"))
+            return gpioPwm.getPseudoFile(MakeFileName(pin,  "/polarity"))
         }
         private set(polarity) {
             println("Setting polarity")
-            pinGpio.setPseudoFile (MakeFileName(pin, "/polarity"), polarity)
+            gpioPwm.setPseudoFile (MakeFileName(pin, "/polarity"), polarity)
         }
 
     /**
@@ -422,11 +450,11 @@ class GpioPwm(pin: Int) {
     var enable: Int
         get() {
             println("Getting enable")
-            return pinGpio.getPseudoFileInt(MakeFileName(pin, "/enable"))
+            return gpioPwm.getPseudoFileInt(MakeFileName(pin, "/enable"))
         }
         private set(enable) {
             println("Setting enable")
-            pinGpio.setPseudoFile (MakeFileName(pin, "/enable"), enable)
+            gpioPwm.setPseudoFile (MakeFileName(pin, "/enable"), enable)
         }
 
     /**
@@ -486,13 +514,5 @@ class GpioPwm(pin: Int) {
 
     companion object {
         private const val PATH = "/sys/class/pwm"
-    }
-
-    /**
-     * Set desirable pin for the GPIO class.
-     */
-    init {
-        println("Initializing pin $pin")
-        this.pin = pin
     }
 }

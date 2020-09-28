@@ -29,6 +29,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    externalNativeBuild {
+        cmake {
+            path file('../CMakeLists.txt')
+        }
+    }
+    ndkVersion '21.3.6528147'
 }
 
 dependencies {
