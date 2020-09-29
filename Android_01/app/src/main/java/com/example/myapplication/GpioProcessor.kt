@@ -396,3 +396,25 @@ class GpioProcessorLed {
     val pinLed4: GpioLed
         get() = GpioLed(userLED4)
 }
+
+class GpioProcessorPwm {
+
+    //----------------------------------------------------------
+    // mapping of physical pin number to specified operating system GPIO number
+    private val  physicalPin23 = 1
+
+    /**
+     * Get function of specific pin.
+     * @param pin Desirable pin.
+     */
+    fun getPin(pin: Int): GpioPwm {
+        return GpioPwm(pin)
+    }
+
+    /**
+     * Get pin 23;
+     * @returns {Gpio}
+     */
+    val pin23: GpioPwm
+        get() = getPin(physicalPin23)
+}

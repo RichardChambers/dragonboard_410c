@@ -89,6 +89,14 @@ class GpioFile {
         return iStatus
     }
 
+    fun pollPseudoFileRevents () : Int {
+        println("    pollPseudoFileRevents - ")
+
+        val iStatus : Int = MainActivity().pollGetLastRevents ()
+
+        return iStatus
+    }
+
 }
 
 class Gpio(pin: Int)  {
@@ -210,6 +218,10 @@ class Gpio(pin: Int)  {
         return iStatus
     }
 
+    fun pinPollRevents () : Int {
+        return pinGpio.pollPseudoFileRevents()
+    }
+
     /**
      * Get or Set pin edge.
      * @param value Value of pin.
@@ -245,10 +257,6 @@ class Gpio(pin: Int)  {
 
     fun pinEdgeBoth() {
         edge = "both"
-    }
-
-    fun waitOnPin () {
-
     }
 
     /**

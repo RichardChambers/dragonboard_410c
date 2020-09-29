@@ -21,8 +21,15 @@ public:
     static const int PollErrorENOMEM = -4;
     static const int PollErrorPOLLERR = -5;
     static const int PollErrorPOLLNVAL = -6;
+    static const int PollErrorPOLLERRNVAL = -7;
+    static const int PollErrorPOLLHUP = -8;
+    static const int PollErrorPOLLERRDEFLT = -9;
 
     static const int PollErrorUNKNOWN = -100;
+
+    static int iPollStatus;
+    static int iPollRet;
+    static int iPollRevents;
 
     PollFileService(const char *pathName = nullptr, int timeMilliSec = -1);
     ~PollFileService();

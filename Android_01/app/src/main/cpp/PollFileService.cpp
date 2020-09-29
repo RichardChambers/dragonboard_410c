@@ -14,8 +14,13 @@
 
 #include "PollFileService.h"
 
+int PollFileService::iPollStatus = 0;
+int PollFileService::iPollRet = 0;
+int PollFileService::iPollRevents = 0;
+
 PollFileService::PollFileService(const char *pathName /* = nullptr */, int timeMilliSec /* = -1 */) : iValue(23), fd(-1)
 {
+    iPollStatus = 0;
     if (pathName) {
         fd = open (pathName, O_RDONLY);
     }
@@ -32,7 +37,7 @@ PollFileService::~PollFileService()
 int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -1 */)
 {
     struct pollfd fdList[] = {
-            {fd, POLLIN | POLLPRI, 0},
+            {fd, POLLPRI, 0},
             {0}
         };
     nfds_t nfds = 1;
@@ -41,51 +46,59 @@ int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -
         fd = open (pathName, O_RDONLY);
         fdList[0].fd = fd;
     }
-    int iStatus = PollErrorUNKNOWN;
+    iPollStatus = PollErrorUNKNOWN;
     int iRet = poll(fdList, nfds, timeMilliSec);
 
     if (iRet == 0) {
-        iStatus = PollTimeOut;
+        iPollStatus = PollTimeOut;
     } else if (iRet < 0) {
         switch (errno) {
             case EFAULT:
-                iStatus = PollErrorEFAULT;
+                iPollStatus = PollErrorEFAULT;
                 break;
             case EINTR:
-                iStatus = PollErrorEINTR;
+                iPollStatus = PollErrorEINTR;
                 break;
             case EINVAL:
-                iStatus = PollErrorEINVAL;
+                iPollStatus = PollErrorEINVAL;
                 break;
             case ENOMEM:
-                iStatus = PollErrorENOMEM;
+                iPollStatus = PollErrorENOMEM;
                 break;
             default:
-                iStatus = PollErrorUNKNOWN;
+                iPollStatus = PollErrorUNKNOWN;
                 break;
         }
     } else if (iRet > 0) {
         // successful call now determine what we should return.
-        switch (fdList[0].revents & (POLLIN | POLLPRI | POLLERR | POLLNVAL)) {
-            case (POLLIN):
-            case (POLLPRI):
-            case (POLLIN | POLLPRI):
-                iStatus = PollSuccess;
+        iPollRevents = fdList[0].revents; /* & (POLLIN | POLLPRI | POLLERR); */
+        switch (fdList[0].revents & (POLLIN | POLLPRI | POLLERR /* | POLLNVAL | POLLHUP*/)) {
+            case (POLLIN):                // value of 1
+            case (POLLPRI):               // value of 2
+            case (POLLIN | POLLPRI):       // value of 3
+                iPollStatus = PollSuccess;
                 break;
 
-            case (POLLERR):
+            case (POLLHUP):
+                iPollStatus = PollErrorPOLLHUP;
+                break;
+            case (POLLERR):               // value of 8
+                iPollStatus = PollErrorPOLLERR;
+                break;
             case (POLLNVAL):
+                iPollStatus = PollErrorPOLLNVAL;
+                break;
             case (POLLERR | POLLNVAL):
-                iStatus = PollErrorPOLLERR;
+                iPollStatus = PollErrorPOLLERRNVAL;
                 break;
 
             default:
-                iStatus = PollErrorPOLLERR;
+                iPollStatus = PollErrorPOLLERRDEFLT;
                 break;
         }
     }
 
-    return iStatus;
+    return iPollStatus;
 }
 
 int PollFileService::PollFileRead (const char *pathName /* = nullptr */)
@@ -112,8 +125,15 @@ int PollFileService::PollFileRead (const char *pathName /* = nullptr */)
 //  -   -2  -> poll(2) error - EINTR
 //  -   -3  -> poll(2) error - EINVAL
 //  -   -4  -> poll(2) error - ENOMEM
+//  -   -5  -> poll(2) error - POLLERR
+//  -   -6  -> poll(2) error - POLLNVAL
+//  -   -7  -> poll(2) error - POLLERR | POLLNVAL
+//  -   -8  -> poll(2) error - POLLHUP
+//  -   -9  -> poll(2) error - poll(2) revent indicator Unknown
 //  - -100 -> poll(2) error - Unknown error
 //
+static int lastRevents = 0;
+
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, jobject pThis, jstring pKey, jint timeMS)
@@ -123,14 +143,32 @@ Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, j
     PollFileService  myPoll;
 
     const char *str = pEnv->GetStringUTFChars(pKey, 0);
+    int  timeMSint = timeMS;
 
-#if 0
-    int iStatus = myPoll.PollFileCheck(str);
+#if 1
+    int iStatus = myPoll.PollFileCheck(str, timeMSint);
 #else
     int iStatus = myPoll.PollFileRead(str);
 #endif
 
     pEnv->ReleaseStringUTFChars(pKey, str);
 
+    lastRevents = myPoll.iPollRevents;
+
     return iStatus;
+}
+
+#if 0
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastStatus (JNIEnv* pEnv, jobject pThis) {
+    return PollFileService::iPollStatus;
+}
+#endif
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastRevents (JNIEnv* pEnv, jobject pThis)
+{
+    return lastRevents;
 }

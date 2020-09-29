@@ -71,19 +71,26 @@ class SecondFragment : Fragment() {
         view.findViewById<Button>(R.id.button_edge_poll).setOnClickListener {
             val gpioProcessor =  GpioProcessor()
             // Get reference of GPIO23.
-            val gpioPin23 = gpioProcessor.pin23
+            val gpioPin26 = gpioProcessor.pin26
 
-            // Set GPIO23 as output.
-            gpioPin23.pinIn()
-            txtScroll.append("Edge Poll pin set up. Polling now.\n")
+            // Set GPIO26 as input.
+            gpioPin26.pinIn()
+            gpioPin26.pinEdgeRising()
+            txtScroll.append("Edge Poll pin set up for rising. Polling now.\n")
 
-            var xvalue : Int = gpioPin23.pinPoll(5000)
+            txtScroll.append ("    Edge setting - " + gpioPin26.edge + " active - " + gpioPin26.active_low + " direction - " + gpioPin26.direction + "\n")
 
-            if (xvalue == 0) {
-                xvalue = gpioPin23.value
+            var xStatus : Int = gpioPin26.pinPoll(10000)
+            val xvalue = gpioPin26.value
+            val xRevents : Int = gpioPin26.pinPollRevents()
+
+            if (xStatus == 0) {
                 txtScroll.append("    Edge Poll pin value " + Integer.toString(xvalue) + "\n")
+                txtScroll.append("    Edge poll Revents - " + Integer.toString(xRevents, 16))
             } else {
-                txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xvalue) + "\n")
+                txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xStatus) + "\n")
+                txtScroll.append("    Edge poll Revents - " + Integer.toString(xRevents, 16))
+                txtScroll.append("    Edge Poll pin value " + Integer.toString(xvalue) + "\n")
             }
         }
 
