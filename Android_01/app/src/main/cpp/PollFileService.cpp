@@ -37,15 +37,27 @@ PollFileService::~PollFileService()
 int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -1 */)
 {
     struct pollfd fdList[] = {
-            {fd, POLLPRI, 0},
+            {fd, POLLPRI | POLLERR, 0},
             {0}
         };
     nfds_t nfds = 1;
+    unsigned char tempbuff[256] = {0};
 
     if (fd < 0 && pathName) {
         fd = open (pathName, O_RDONLY);
         fdList[0].fd = fd;
     }
+
+    // with a edge triggered GPIO that we are going to use the poll(2)
+    // function to wait on an event, we need to read from the
+    // pin before we do the poll(2). If the read is not done then
+    // the poll(2) returns with both POLLPRI and POLLERR set in the
+    // revents member. however if we read first then do the poll2()
+    // the poll(2) will wait for the event, input voltage change with
+    // either a rising edge or a falling edge, depending on the setting
+    // in the /edge pseudo file.
+    ssize_t iCount = read (fdList[0].fd, tempbuff, 255);
+
     iPollStatus = PollErrorUNKNOWN;
     int iRet = poll(fdList, nfds, timeMilliSec);
 
@@ -143,7 +155,7 @@ Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, j
     PollFileService  myPoll;
 
     const char *str = pEnv->GetStringUTFChars(pKey, 0);
-    int  timeMSint = timeMS;
+    int  timeMSint = 10000; // timeMS;
 
 #if 1
     int iStatus = myPoll.PollFileCheck(str, timeMSint);
