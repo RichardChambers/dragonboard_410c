@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import java.io.*
+import kotlin.properties.Delegates
 
 /**
  * Originall Created by Ara on 7/21/15.
@@ -42,14 +43,16 @@ class GpioFile {
      *          pseudo file must allow for the pseudo file to be opened and updated
      *          in order for the set() function to work.
      */
-    fun setPseudoFile (pinPathFull : String, pinValue : String) {
+    fun setPseudoFile (pinPathFull : String, pinValue : String) : Int {
         println("    setPseudoFile - String")
-        try {
+        return try {
             val out = BufferedWriter(FileWriter(pinPathFull, false))
             out.write(pinValue)
             out.close()
+            1
         } catch (e: IOException) {
             println("Error: " + e.message)
+            0
         }
     }
 
@@ -58,10 +61,10 @@ class GpioFile {
      *          pseudo file must allow for the pseudo file to be opened and updated
      *          in order for the set() function to work.
      */
-    fun setPseudoFile(pinPathFull : String, pinValue : Int) {
-            println("   setPseudoFile - Int")
-            setPseudoFile(pinPathFull, Integer.toString(pinValue))
-        }
+    fun setPseudoFile(pinPathFull : String, pinValue : Int) : Int {
+        println("   setPseudoFile - Int")
+        return setPseudoFile(pinPathFull, Integer.toString(pinValue))
+    }
 
     fun getPseudoFile(pinPathFull : String)  : String {
         println("    getPseudoFile - String")
@@ -70,7 +73,7 @@ class GpioFile {
             val br = BufferedReader(FileReader(pinPathFull))
             line = br.readLine()
             br.close()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             println("Error: " + e.message)
         }
         return line
@@ -78,25 +81,27 @@ class GpioFile {
 
     fun getPseudoFileInt(pinPathFull : String)  : Int {
         println("    getPseudoFile - Int")
-        return getPseudoFile(pinPathFull).toInt()
-    }
+        // should there be a problem with the reading of the pseudo file
+        // what will be returned is an empty string. when we try to convert
+        // the empty string to an integer we will get an exception so we
+        // will just return a value of zero (0).
+        return try {
+            getPseudoFile(pinPathFull).toInt()
+        } catch (e: Exception) {
+            println ("Error: " + e.message)
+            0
+        }
+     }
 
-    fun pollPseudoFile (pinPathFull : String, timeOutMs : Int) : Int {
+    suspend fun pollPseudoFile (pinPathFull : String, timeOutMs : Int) : Int {
         println("    pollPseudoFile - String")
-
-        val iStatus : Int = MainActivity().pollFileWithTimeOut (pinPathFull, timeOutMs)
-
-        return iStatus
+        return MainActivity().pollFileWithTimeOut (pinPathFull, timeOutMs)
     }
 
     fun pollPseudoFileRevents () : Int {
         println("    pollPseudoFileRevents - ")
-
-        val iStatus : Int = MainActivity().pollGetLastRevents ()
-
-        return iStatus
+        return MainActivity().pollGetLastRevents ()
     }
-
 }
 
 class Gpio(pin: Int)  {
@@ -188,7 +193,6 @@ class Gpio(pin: Int)  {
             pinGpio.setPseudoFile (MakeFileName(pin,  "/value"), value)
         }
 
-
     /**
      * Set pin as high.
      */
@@ -213,9 +217,22 @@ class Gpio(pin: Int)  {
 //  -   -4  -> poll(2) error - ENOMEM
 //  - -100 -> poll(2) error - Unknown error
 //
-    fun pinPoll (timeMs: Int) : Int {
-        val iStatus : Int = pinGpio.pollPseudoFile (MakeFileName(pin,  "/value"), timeMs)
-        return iStatus
+    var pollStatusShadow : Int by Delegates.observable(0) { _, oldValue, newValue ->
+        // this variable is used to allow the user of this pin who is using
+        // polling to set a listener so that when a pinPoll() is done, they
+        // will get an event indicating the poll has finished.
+        // this variable is toggled between the values of 0 and 1 by setting
+        // its value using a statement of "pollStatusShadow = 1 - pollStatusShadow"
+        onPollStatusChanged?.invoke(oldValue, newValue)
+    }
+    var onPollStatusChanged: ((Int, Int) -> Unit)? = null
+
+    var lastPinPollStatus : Int = 0
+
+    suspend fun pinPoll (timeMs: Int) : Int {
+        lastPinPollStatus = pinGpio.pollPseudoFile (MakeFileName(pin,  "/value"), timeMs)
+        pollStatusShadow = 1 - pollStatusShadow   // toggle the poll status to let observables know its done.
+        return lastPinPollStatus
     }
 
     fun pinPollRevents () : Int {
