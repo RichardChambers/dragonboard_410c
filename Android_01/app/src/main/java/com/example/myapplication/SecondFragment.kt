@@ -10,6 +10,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -69,29 +72,36 @@ class SecondFragment : Fragment() {
         }
 
         view.findViewById<Button>(R.id.button_edge_poll).setOnClickListener {
-            val gpioProcessor =  GpioProcessor()
-            // Get reference of GPIO23.
-            val gpioPin26 = gpioProcessor.pin26
-
-            // Set GPIO26 as input.
-            gpioPin26.pinIn()
-            gpioPin26.pinEdgeRising()
             txtScroll.append("Edge Poll pin set up for rising. Polling now.\n")
 
-            txtScroll.append ("    Edge setting - " + gpioPin26.edge + " active - " + gpioPin26.active_low + " direction - " + gpioPin26.direction + "\n")
+                    val gpioProcessor = GpioProcessor()
+                    // Get reference of GPIO23.
+                    val gpioPin26 = gpioProcessor.pin26
 
-            var xStatus : Int = gpioPin26.pinPoll(10000)
-            val xvalue = gpioPin26.value
-            val xRevents : Int = gpioPin26.pinPollRevents()
+                    // Set GPIO26 as input.
+                    gpioPin26.pinIn()
+                    gpioPin26.pinEdgeRising()
+                    txtScroll.append("    Edge setting - ${gpioPin26.edge} active - ${gpioPin26.active_low} direction - ${gpioPin26.direction}\n")
 
-            if (xStatus == 0) {
-                txtScroll.append("    Edge Poll pin value " + Integer.toString(xvalue) + "\n")
-                txtScroll.append("    Edge poll Revents - " + Integer.toString(xRevents, 16))
-            } else {
-                txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xStatus) + "\n")
-                txtScroll.append("    Edge poll Revents - " + Integer.toString(xRevents, 16))
-                txtScroll.append("    Edge Poll pin value " + Integer.toString(xvalue) + "\n")
-            }
+                    gpioPin26.onPollStatusChanged = { _, _ ->
+
+                        val xStatus = gpioPin26.lastPinPollStatus
+                        val xvalue = gpioPin26.value
+                        val xRevents: Int = gpioPin26.pinPollRevents()
+
+                        if (xStatus == 0) {
+                            txtScroll.append("    Edge Poll pin value " + xvalue.toString() + "\n")
+                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16))
+                        } else {
+                            txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xStatus) + "\n")
+                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16))
+                            txtScroll.append("    Edge Poll pin value " + xvalue.toString() + "\n")
+                        }
+                    }
+                    MainScope().launch {
+                        gpioPin26.pinPoll(10000)
+                    }
+                txtScroll.append(" *Polling launched.\n")
         }
 
 
@@ -112,6 +122,7 @@ class SecondFragment : Fragment() {
             val gpiopinLed = gpioProcessorLed.pinLed1
 
             if (pinUser1State == 0) {
+
                 val myValue : Int = gpiopinLed.brightness
                 gpiopinLed.pinHigh()    // drive pin high to turn on LED
                 txtScroll.append("LED Uer 1 On " + gpiopinLed.pin + " was " + myValue.toString() + "\n")

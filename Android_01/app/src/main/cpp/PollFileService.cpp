@@ -160,7 +160,9 @@ Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, j
 #if 1
     int iStatus = myPoll.PollFileCheck(str, timeMSint);
 #else
-    int iStatus = myPoll.PollFileRead(str);
+    // following allows us to do some testing of the architecture
+    // using an emulator that does not support GPIO pins.
+    int iStatus = sleep(timeMSint / 1000);
 #endif
 
     pEnv->ReleaseStringUTFChars(pKey, str);
