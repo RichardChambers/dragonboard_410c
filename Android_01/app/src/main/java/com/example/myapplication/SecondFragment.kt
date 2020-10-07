@@ -90,12 +90,12 @@ class SecondFragment : Fragment() {
                         val xRevents: Int = gpioPin26.pinPollRevents()
 
                         if (xStatus == 0) {
-                            txtScroll.append("    Edge Poll pin value " + xvalue.toString() + "\n")
-                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16))
+                            txtScroll.append("    Edge Poll pin value ${xvalue}\n")
+                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16) + "\n")
                         } else {
-                            txtScroll.append("    Edge Poll pin failed - " + Integer.toString(xStatus) + "\n")
-                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16))
-                            txtScroll.append("    Edge Poll pin value " + xvalue.toString() + "\n")
+                            txtScroll.append("    Edge Poll pin failed - ${xStatus}\n")
+                            txtScroll.append("    Edge poll Revents - " + xRevents.toString(16) + "\n")
+                            txtScroll.append("    Edge Poll pin value ${xvalue}\n")
                         }
                     }
                     MainScope().launch {

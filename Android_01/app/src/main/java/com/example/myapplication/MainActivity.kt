@@ -70,5 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     external fun pollFileWithTimeOut(pathPseudo : String, timeOutMs : Int): Int
+    external fun pollGetLastStatus() : Int
     external fun pollGetLastRevents() : Int
+    external fun pollGetLastValue() : Int
 }

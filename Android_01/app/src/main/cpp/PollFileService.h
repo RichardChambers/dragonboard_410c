@@ -26,10 +26,12 @@ public:
     static const int PollErrorPOLLERRDEFLT = -9;
 
     static const int PollErrorUNKNOWN = -100;
+    static const int PollTriggerStatusINIT = -2000;
 
     static int iPollStatus;
     static int iPollRet;
     static int iPollRevents;
+    static int iPollLastValue;
 
     PollFileService(const char *pathName = nullptr, int timeMilliSec = -1);
     ~PollFileService();
@@ -41,5 +43,17 @@ public:
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, jobject pThis, jstring pKey, jint timeMS);
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastStatus (JNIEnv* pEnv, jobject pThis);
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastRevents (JNIEnv* pEnv, jobject pThis);
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastValue (JNIEnv* pEnv, jobject pThis);
 
 #endif //MY_APPLICATION_POLLFILESERVICE_H

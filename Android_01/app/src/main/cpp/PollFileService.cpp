@@ -17,6 +17,9 @@
 int PollFileService::iPollStatus = 0;
 int PollFileService::iPollRet = 0;
 int PollFileService::iPollRevents = 0;
+int PollFileService::iPollLastValue = 0;
+
+static PollFileService myPollLastStatus;  // allow us to access the last status information
 
 PollFileService::PollFileService(const char *pathName /* = nullptr */, int timeMilliSec /* = -1 */) : iValue(23), fd(-1)
 {
@@ -41,12 +44,14 @@ int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -
             {0}
         };
     nfds_t nfds = 1;
-    unsigned char tempbuff[256] = {0};
+    char tempbuff[256] = {0};
 
     if (fd < 0 && pathName) {
         fd = open (pathName, O_RDONLY);
         fdList[0].fd = fd;
     }
+
+    if (fd < 0) return (iPollStatus = PollErrorEINVAL);
 
     // with a edge triggered GPIO that we are going to use the poll(2)
     // function to wait on an event, we need to read from the
@@ -57,6 +62,7 @@ int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -
     // either a rising edge or a falling edge, depending on the setting
     // in the /edge pseudo file.
     ssize_t iCount = read (fdList[0].fd, tempbuff, 255);
+    iPollLastValue = atoi (tempbuff);
 
     iPollStatus = PollErrorUNKNOWN;
     int iRet = poll(fdList, nfds, timeMilliSec);
@@ -85,9 +91,12 @@ int PollFileService::PollFileCheck(const char *pathName, int timeMilliSec /* = -
         // successful call now determine what we should return.
         iPollRevents = fdList[0].revents; /* & (POLLIN | POLLPRI | POLLERR); */
         switch (fdList[0].revents & (POLLIN | POLLPRI | POLLERR /* | POLLNVAL | POLLHUP*/)) {
-            case (POLLIN):                // value of 1
-            case (POLLPRI):               // value of 2
+            case (POLLIN):                 // value of 1
+            case (POLLIN | POLLERR):       // value of 9
+            case (POLLPRI):                // value of 2
+            case (POLLPRI | POLLERR):      // value of 10
             case (POLLIN | POLLPRI):       // value of 3
+            case (POLLIN | POLLPRI | POLLERR):   // value of 13
                 iPollStatus = PollSuccess;
                 break;
 
@@ -121,9 +130,15 @@ int PollFileService::PollFileRead (const char *pathName /* = nullptr */)
     if (fd < 0 && pathName) {
         fd = open (pathName, O_RDONLY);
     }
+
+    if (fd < 0) return (iPollStatus = iRet = PollErrorEINVAL);
+
     int nCount = read (fd, buffer, 10);
-    if (nCount > 0) {
-        iRet = atoi (buffer);
+    if (nCount < 1) {
+        iPollStatus = iRet = PollErrorEFAULT;
+    } else {
+        iPollLastValue = iRet = atoi (buffer);
+        iPollStatus = PollSuccess;
     }
 
     return iRet;
@@ -143,19 +158,17 @@ int PollFileService::PollFileRead (const char *pathName /* = nullptr */)
 //  -   -8  -> poll(2) error - POLLHUP
 //  -   -9  -> poll(2) error - poll(2) revent indicator Unknown
 //  - -100 -> poll(2) error - Unknown error
+//  - -2000  -> observable initial value in order to know when pinPollTriggerStatus changes
 //
-static int lastRevents = 0;
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, jobject pThis, jstring pKey, jint timeMS)
 {
-    char *pathName;
-    int timeMilliSec;
     PollFileService  myPoll;
 
     const char *str = pEnv->GetStringUTFChars(pKey, 0);
-    int  timeMSint = 10000; // timeMS;
+    int  timeMSint = timeMS; // timeMS;
 
 #if 1
     int iStatus = myPoll.PollFileCheck(str, timeMSint);
@@ -167,22 +180,25 @@ Java_com_example_myapplication_MainActivity_pollFileWithTimeOut (JNIEnv* pEnv, j
 
     pEnv->ReleaseStringUTFChars(pKey, str);
 
-    lastRevents = myPoll.iPollRevents;
-
     return iStatus;
 }
 
-#if 0
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_myapplication_MainActivity_pollGetLastStatus (JNIEnv* pEnv, jobject pThis) {
-    return PollFileService::iPollStatus;
+    return myPollLastStatus.iPollStatus;
 }
-#endif
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_myapplication_MainActivity_pollGetLastRevents (JNIEnv* pEnv, jobject pThis)
 {
-    return lastRevents;
+    return myPollLastStatus.iPollRevents;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_myapplication_MainActivity_pollGetLastValue (JNIEnv* pEnv, jobject pThis)
+{
+    return myPollLastStatus.iPollLastValue;
 }
