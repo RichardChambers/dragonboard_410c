@@ -80,7 +80,10 @@ The following script segment should be added to the bottom of the file:
         chmod 777 /sys/class/gpio/gpio${pins[i]}/direction;
     done
 
+See also
 
+ - https://stackoverflow.com/questions/63653864/accessing-gpio-low-power-connector-on-dragonboard-410c-running-android
+ - https://stackoverflow.com/questions/63769403/what-is-the-sys-class-gpio-export-and-sys-class-gpio-unexport-mechanism-and-w
 
 **Test of the Development Environment**
 
